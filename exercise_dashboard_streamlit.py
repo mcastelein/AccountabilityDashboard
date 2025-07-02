@@ -226,9 +226,9 @@ def main():
             height=40
         ),
         cells=dict(
-            values=[
-                pd.to_numeric(total_balance[col], errors='coerce').round(2)
-                if total_balance[col].dtype == 'object' else total_balance[col].round(2)
+            values = [
+                total_balance[col].round(2) if pd.api.types.is_numeric_dtype(total_balance[col])
+                else total_balance[col]
                 for col in total_balance.columns
             ],
             fill_color='rgb(240, 248, 255)',
