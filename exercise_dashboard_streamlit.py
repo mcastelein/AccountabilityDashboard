@@ -14,7 +14,7 @@ st.set_page_config(page_title="Exercise Accountability Dashboard", layout="wide"
 st.title("🏋️ Exercise Accountability Dashboard")
 
 # Load data from Google Sheets
-@st.cache
+@st.cache_data
 def load_data():
     sheet_url = 'https://docs.google.com/spreadsheets/d/1252I5iC7Dy3hMtQ0lDEVCxAf0B7jWFSoErll8rePOes/export?format=csv&gid=142314539'
     df = pd.read_csv(sheet_url, header=1, usecols=[0, 1, 2, 3, 4, 5, 6])
@@ -23,7 +23,7 @@ def load_data():
     df['Fail Money'] = np.nan
     return df
 
-@st.cache
+@st.cache_data
 def load_transactions():
     transactions_sheet_url = 'https://docs.google.com/spreadsheets/d/1252I5iC7Dy3hMtQ0lDEVCxAf0B7jWFSoErll8rePOes/export?format=csv&gid=422897383'
     transactions_df = pd.read_csv(transactions_sheet_url,usecols=[0, 1, 2, 3, 4, 5, 6])
@@ -226,7 +226,11 @@ def main():
             height=40
         ),
         cells=dict(
-            values=[total_balance[col].round(2) for col in total_balance.columns],
+            values=[
+                pd.to_numeric(total_balance[col], errors='coerce').round(2)
+                if total_balance[col].dtype == 'object' else total_balance[col].round(2)
+                for col in total_balance.columns
+            ],
             fill_color='rgb(240, 248, 255)',
             font=dict(color='rgb(20, 40, 80)', size=13),
             align='center',
