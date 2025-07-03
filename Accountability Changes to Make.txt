@@ -1,0 +1,6 @@
+Accountability Changes to Make:
+
+Make section for individuals:
+- Show their completion over time as a bar chart
+- Show their individual, current balance
+- Show their balance over time as a line chart
