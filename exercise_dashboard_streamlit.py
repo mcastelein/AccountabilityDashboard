@@ -13,6 +13,8 @@ import streamlit as st
 st.set_page_config(page_title="Exercise Accountability Dashboard", layout="wide")
 st.title("🏋️ Exercise Accountability Dashboard")
 
+st.subheader(f"Weekly Balance")
+
 # Load data from Google Sheets
 @st.cache_data
 def load_data():
@@ -183,7 +185,7 @@ def main():
     ]
     santorini_cmap = LinearSegmentedColormap.from_list("Santorini", santorini_colors)
 
-    st.subheader(f"Weekly Balance Over Time by Person (Group {group_number})")
+
     fig, ax = plt.subplots(figsize=(12, 8))
     sns.heatmap(
         sorted_balance_table,
@@ -216,7 +218,7 @@ def main():
         i=i+1
     total_balance = total_balance.sort_values(by=['Total Balance'],ascending=False)
 
-    st.subheader("🔷 Total Balance by Person 🔷")
+    st.subheader("Total Balance")
     fig2 = go.Figure(data=[go.Table(
         header=dict(
             values=list(total_balance.columns),
