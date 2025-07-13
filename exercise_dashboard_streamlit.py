@@ -417,7 +417,7 @@ def main():
         person_trans_balance = group_transactions[group_transactions['Who']==dude]['Amount'].sum()
         total_balance.loc[i] = [dude,person_exercise_balance,person_trans_balance,person_exercise_balance+person_trans_balance]
         i=i+1
-    total_balance = total_balance.sort_values(by=['Total Balance'],ascending=False)
+    total_balance = total_balance.sort_values(by=['Exercise Balance'],ascending=False)
 
     if hide_no_balance:
         total_balance = total_balance[
