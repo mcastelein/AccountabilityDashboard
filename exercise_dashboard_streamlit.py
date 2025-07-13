@@ -277,9 +277,23 @@ def main():
     ))
 
     streak_fig.update_layout(
-        # title='🔥 Streak Leaderboard 🔥',
-        xaxis_title='Streak',
-        yaxis_title='Person',
+        title=dict(
+            text='🔥 Streak Leaderboard 🔥',
+            font=dict(size=20, color='#0A2342'),
+            x=0.5,
+            xanchor='center'
+        ),
+        xaxis=dict(
+            title='Streak',
+            titlefont=dict(color='#0A2342'),
+            tickfont=dict(color='#0A2342'),
+            gridcolor='lightgray'
+        ),
+        yaxis=dict(
+            title='',
+            tickfont=dict(color='#0A2342'),
+            showgrid=False
+        ),
         plot_bgcolor='white',
         paper_bgcolor='white',
         font=dict(
@@ -287,9 +301,10 @@ def main():
             size=14,
             color='#0A2342'
         ),
-        margin=dict(l=100, r=50, t=0, b=40),
+        margin=dict(l=100, r=40, t=50, b=40),
         height=400
     )
+
 
     st.plotly_chart(streak_fig, use_container_width=True)
 
