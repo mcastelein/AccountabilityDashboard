@@ -285,7 +285,7 @@ def main():
         ),
         xaxis=dict(
             title='Streak',
-            titlefont=dict(color='#0A2342'),
+            # titlefont=dict(color='#0A2342'),
             tickfont=dict(color='#0A2342'),
             gridcolor='lightgray'
         ),
