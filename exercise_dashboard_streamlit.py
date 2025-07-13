@@ -277,6 +277,7 @@ def main():
     ))
 
     streak_fig.update_layout(
+        # title='🔥 Streak Leaderboard 🔥',
         xaxis_title='Streak',
         yaxis_title='Person',
         plot_bgcolor='white',
@@ -284,15 +285,7 @@ def main():
         font=dict(
             family='Helvetica, sans-serif',
             size=14,
-            color='#0A2342'  # default font color
-        ),
-        xaxis=dict(
-            tickfont=dict(color='#0A2342'),
-            titlefont=dict(color='#0A2342')
-        ),
-        yaxis=dict(
-            tickfont=dict(color='#0A2342'),
-            titlefont=dict(color='#0A2342')
+            color='#0A2342'
         ),
         margin=dict(l=100, r=50, t=0, b=40),
         height=400
