@@ -6,14 +6,13 @@ import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 import plotly.graph_objects as go
 import streamlit as st
+import plotly.express as px
 
 # Set working directory if needed (optional)
 # os.chdir(r'C:\Users\mpcas\Documents\AchieverzClub\python')
 
 st.set_page_config(page_title="Exercise Accountability Dashboard", layout="wide")
 st.title("🏋️ Exercise Accountability Dashboard")
-
-st.subheader(f"Weekly Balance")
 
 # Load data from Google Sheets
 @st.cache_data
@@ -66,6 +65,17 @@ def calculate_balance(df, group_id, month, week):
     ).astype('float64')
     return one_week_glance
 
+# Helper function for streak calculation
+def calculate_streak(df, person, group_id):
+    person_df = df[(df['Person'] == person) & (df['Group'] == group_id)]
+    streak = 0
+    for completed in reversed(person_df['Completed'].tolist()):
+        if completed == 1:
+            streak += 1
+        else:
+            break
+    return streak
+
 def main():
     df = load_data().copy()
     transactions_df = load_transactions().copy()
@@ -85,7 +95,35 @@ def main():
     present_months = [m for m in month_order if m in df['Month'].unique()]
     group_df['Month'] = pd.Categorical(group_df['Month'], categories=present_months, ordered=True)
 
-    # Calculate balances for all weeks
+
+
+
+
+
+
+
+    # --- Weekly Balance Section ---
+    st.subheader(f"Weekly Balance Over Time by Person (Group {group_number})")
+    # Move month/week selectors here
+    available_months = [m for m in month_order if m in group_df['Month'].unique()]
+    start_month = st.selectbox("Select starting month:", available_months, index=0)
+    available_weeks_in_month = sorted(group_df[group_df['Month'] == start_month]['Week'].unique())
+    start_week = st.selectbox("Select starting week:", available_weeks_in_month, index=0)
+    hide_inactive = st.checkbox("Hide inactive people (no data in latest week)", value=True)
+
+    # Filter group_df for rows from (start_month, start_week) onward
+    def month_week_gte(row):
+        month_idx = month_order.index(row['Month'])
+        start_month_idx = month_order.index(start_month)
+        if month_idx > start_month_idx:
+            return True
+        elif month_idx == start_month_idx:
+            return row['Week'] >= start_week
+        else:
+            return False
+    
+
+        # Calculate balances for all weeks
     for group in df['Group'].unique():
         for month in df[df['Group'] == group]['Month'].unique():
             for week in df[(df['Month'] == month) & (df['Group'] == group)]['Week'].unique():
@@ -108,27 +146,7 @@ def main():
     if group_number == 1:
         group_df = group_df[~group_df['Month'].isin(['January', 'February', 'March'])]
     group_df['Month'] = pd.Categorical(group_df['Month'], categories=present_months, ordered=True)
-
-    # --- New: Month/Week start selection ---
-    available_months = [m for m in month_order if m in group_df['Month'].unique()]
-    start_month = st.selectbox("Select starting month:", available_months, index=0)
-    available_weeks_in_month = sorted(group_df[group_df['Month'] == start_month]['Week'].unique())
-    start_week = st.selectbox("Select starting week:", available_weeks_in_month, index=0)
-    hide_inactive = st.checkbox("Hide inactive people (no data in selected range)", value=True)
-
-
-    # Filter group_df for rows from (start_month, start_week) onward
-    def month_week_gte(row):
-        month_idx = month_order.index(row['Month'])
-        start_month_idx = month_order.index(start_month)
-        if month_idx > start_month_idx:
-            return True
-        elif month_idx == start_month_idx:
-            return row['Week'] >= start_week
-        else:
-            return False
     filtered_group_df = group_df[group_df.apply(month_week_gte, axis=1)]
-
 
     # Pivot for heatmap
     balance_table = filtered_group_df.pivot_table(
@@ -137,20 +155,22 @@ def main():
         values='Balance',
         aggfunc='first'
     )
+    
     month_sorter = {m: i for i, m in enumerate(month_order)}
     existing = filtered_group_df[['Month', 'Week']].drop_duplicates()
     existing['MonthSort'] = existing['Month'].map(month_sorter)
     existing = existing.sort_values(by=['MonthSort', 'Week']).drop(columns='MonthSort')
     existing_index = pd.MultiIndex.from_frame(existing)
     balance_table = balance_table.loc[existing_index]
-
-    # Remove inactive people if checkbox is checked
+        # Remove inactive people if checkbox is checked
     if hide_inactive and not balance_table.empty:
         # Find the most recent (Month, Week) in the filtered data
         most_recent_idx = balance_table.index[-1]
         # Only keep people with non-NaN value in the most recent week
         active_people = balance_table.columns[~balance_table.loc[most_recent_idx].isna()]
         balance_table = balance_table[active_people]
+
+    
 
     # Sort people by recent streak, count, last activity
     def recent_consecutive_streak(col):
@@ -206,7 +226,173 @@ def main():
     plt.tight_layout()
     st.pyplot(fig)
 
+
+
+
+
+
+
+
+
+
+
+    # --- Streak Leaderboard Section (after filtering) ---
+    st.subheader("🔥 Streak Leaderboard 🔥")
+    # Find the most recent (Month, Week) in the filtered data
+    if not filtered_group_df.empty:
+        # Sort by Month and Week to get the most recent
+        filtered_group_df = filtered_group_df.sort_values(['Month', 'Week'])
+        most_recent_month = filtered_group_df['Month'].iloc[-1]
+        most_recent_week = filtered_group_df['Week'].iloc[-1]
+        active_people = filtered_group_df[
+            (filtered_group_df['Month'] == most_recent_month) &
+            (filtered_group_df['Week'] == most_recent_week)
+        ]['Person'].unique()
+    else:
+        active_people = []
+    # Calculate streaks for active people
+    streak_list = [calculate_streak(df, person, group_number) for person in active_people]
+
+    # Build streak_df once
+    streak_df = pd.DataFrame({
+        'Person': active_people,
+        'Streak': streak_list
+    })
+
+    streak_df = streak_df.sort_values(by='Streak', ascending=True)
+
+    # Now plot the same sorted DataFrame
+    # santorini_blues = ['#0A2342', '#2E5984', '#4A90E2', '#A7C7E7', '#E6F0FA']
+    santorini_blues = ['#4A90E2']
+    bar_colors = santorini_blues * (len(streak_df) // len(santorini_blues) + 1)
+
+    streak_fig = go.Figure(go.Bar(
+        x=streak_df['Streak'].to_list(),
+        y=streak_df['Person'].to_list(),
+        orientation='h',
+        marker=dict(color=bar_colors[:len(streak_df)]),
+        text=streak_df['Streak'],
+        textposition='outside',
+        hovertemplate='<b>%{y}</b><br>Streak: %{x}<extra></extra>',
+    ))
+
+    streak_fig.update_layout(
+        # title='🔥 Streak Leaderboard 🔥',
+        xaxis_title='Streak',
+        yaxis_title='Person',
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(
+            family='Helvetica, sans-serif',
+            size=14,
+            color='#0A2342'
+        ),
+        margin=dict(l=100, r=50, t=0, b=40),
+        height=400
+    )
+
+    st.plotly_chart(streak_fig, use_container_width=True)
+
+
+
+
+
+
+
+
+
+
+    # --- Participant Search Section ---
+    st.subheader("🔍 Participant Search")
+    
+    # Get all people in the selected group
+    group_people = group_df['Person'].unique()
+    selected_person = st.selectbox("Select a participant to view their completion history:", group_people, index=0)
+    
+    if selected_person:
+        # Filter data for the selected person
+        person_data = group_df[group_df['Person'] == selected_person].copy()
+        
+        # Sort by month and week for proper chronological order
+        month_order = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ]
+        person_data['Month'] = pd.Categorical(person_data['Month'], categories=month_order, ordered=True)
+        person_data = person_data.sort_values(['Month', 'Week'])
+        
+        # Ensure Completed is float
+        person_data['Completed'] = person_data['Completed'].astype(float)
+        
+        # Create x labels only for weeks where the participant has data
+        x_labels = [f"{row['Month']} W{row['Week']}" for _, row in person_data.iterrows()]
+
+        # Ensure x_labels are unique
+        if len(set(x_labels)) != len(x_labels):
+            st.warning("Duplicate week labels detected! This can cause plotting issues.")
+
+        
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=x_labels,
+            y=person_data['Completed'].tolist(),  # ensure values not Series
+            mode='lines+markers',
+            name='Completion'
+        ))
+
+        fig.update_layout(
+            title=f"Completion History for {selected_person} (Group {group_number})",
+            xaxis_title='Week',
+            yaxis_title='Completion',
+            yaxis=dict(range=[0, 1.1])
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Show summary statistics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        total_weeks = len(person_data)
+        completed_weeks = (person_data['Completed'] == 1).sum()
+        current_streak = 0 if selected_person not in active_people else calculate_streak(df, selected_person, group_number)
+
+        avg_completion = person_data['Completed'].mean()
+        
+        with col1:
+            st.metric("Total Weeks", total_weeks)
+        with col2:
+            st.metric("100% Weeks", completed_weeks)
+        with col3:
+            st.metric("Current Streak", f"{current_streak} weeks")
+        with col4:
+            st.metric("Avg Completion", f"{avg_completion:.1%}")
+        
+        # Show detailed table
+        st.write(f"Detailed History for {selected_person}")
+        display_data = person_data[['Month', 'Week', 'Completed', 'Skipped', 'Failed']].copy()
+        display_data['Completed'] = display_data['Completed'].apply(lambda x: f"{x:.0%}")
+        display_data['Skipped'] = display_data['Skipped'].apply(lambda x: f"{x:.0%}")
+        display_data['Failed'] = display_data['Failed'].apply(lambda x: f"{x:.0%}")
+        
+        st.dataframe(display_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
     # Total balance table
+    st.subheader("🔷 Total Balance by Person 🔷")
+    hide_no_balance = st.checkbox("Hide people with no balance", value=True)
+
     total_balance = pd.DataFrame(columns=['Person','Exercise Balance','Transaction Balance','Total Balance'])
     group_transactions = transactions_df[transactions_df['Group']==group_number]
     i=0
@@ -218,7 +404,12 @@ def main():
         i=i+1
     total_balance = total_balance.sort_values(by=['Total Balance'],ascending=False)
 
-    st.subheader("Total Balance")
+    if hide_no_balance:
+        total_balance = total_balance[
+            (total_balance['Total Balance'] < -1) | (total_balance['Total Balance'] > 1)
+        ]
+
+    
     fig2 = go.Figure(data=[go.Table(
         header=dict(
             values=list(total_balance.columns),
@@ -243,11 +434,11 @@ def main():
         width=800,
         height=600,
         title=dict(
-            text="🔷 Total Balance by Person 🔷",
+            # text="",
             font=dict(size=20, color='rgb(0, 90, 156)'),
             x=0.5
         ),
-        margin=dict(l=0, r=0, t=50, b=0)
+        margin=dict(l=0, r=0, t=0, b=0)
     )
     st.plotly_chart(fig2, use_container_width=True)
 
