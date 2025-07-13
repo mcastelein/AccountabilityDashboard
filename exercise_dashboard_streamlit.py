@@ -278,7 +278,7 @@ def main():
 
     streak_fig.update_layout(
         title=dict(
-            text='🔥 Streak Leaderboard 🔥',
+            # text='🔥 Streak Leaderboard 🔥',
             font=dict(size=20, color='#0A2342'),
             x=0.5,
             xanchor='center'
@@ -301,7 +301,7 @@ def main():
             size=14,
             color='#0A2342'
         ),
-        margin=dict(l=100, r=40, t=50, b=40),
+        margin=dict(l=100, r=40, t=0, b=40),
         height=400
     )
 
