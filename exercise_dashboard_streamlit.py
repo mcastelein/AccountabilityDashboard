@@ -434,9 +434,11 @@ def main():
             height=40
         ),
         cells=dict(
-            values = [
-                total_balance[col].round(2) if pd.api.types.is_numeric_dtype(total_balance[col])
-                else total_balance[col]
+            values=[
+                [
+                    f"{x:.2f}" if pd.api.types.is_numeric_dtype(total_balance[col]) else x
+                    for x in total_balance[col]
+                ]
                 for col in total_balance.columns
             ],
             fill_color='rgb(240, 248, 255)',
