@@ -24,9 +24,13 @@ def load_data():
     df['Fail Money'] = np.nan
     return df
 
+
+
 # Manual refresh button
-if st.button("🔄 Refresh Weekly Data"):
-    st.cache_data.clear()  # Clears the entire data cache
+col1, col2, col3 = st.columns([6, 1, 1])  # Adjust column widths
+with col3:
+    if st.button("🔄 Refresh Weekly Data"):
+        st.cache_data.clear()
 
 df = load_data()
 
