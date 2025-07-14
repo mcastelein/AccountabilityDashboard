@@ -24,6 +24,12 @@ def load_data():
     df['Fail Money'] = np.nan
     return df
 
+# Manual refresh button
+if st.button("🔄 Refresh Weekly Data"):
+    st.cache_data.clear()  # Clears the entire data cache
+
+df = load_data()
+
 @st.cache_data
 def load_transactions():
     transactions_sheet_url = 'https://docs.google.com/spreadsheets/d/1252I5iC7Dy3hMtQ0lDEVCxAf0B7jWFSoErll8rePOes/export?format=csv&gid=422897383'
