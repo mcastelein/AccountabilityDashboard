@@ -2,7 +2,7 @@
 
 A fully interactive Streamlit dashboard that helps groups stay accountable with their weekly exercise goals. Built for simplicity, speed, and insight.
 
-dashboard_gif.gif
+![Dashboard Demo](dashboard_gif.gif)
 
 🚀 Features
 
