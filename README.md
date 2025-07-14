@@ -4,7 +4,7 @@ A fully interactive Streamlit dashboard that helps groups stay accountable with 
 
 ![Dashboard Demo](dashboard_gif.gif)
 
-🚀 Features
+🚀 Features:
 
 📊 Weekly Balance Heatmap
 - Visualize how each member is doing week by week
@@ -34,5 +34,5 @@ A fully interactive Streamlit dashboard that helps groups stay accountable with 
 - Google Sheets – source of truth for exercise + transactions
 
 🏃‍♂️‍➡️ How to Run
-
-It's deployed as a webapp, so in order to see if for yourself, all you have to do is click this link: https://exercise-accountability-dashboard.streamlit.app/
+- It's deployed as a webapp, so in order to see if for yourself, all you have to do is click this link:
+- https://exercise-accountability-dashboard.streamlit.app/
