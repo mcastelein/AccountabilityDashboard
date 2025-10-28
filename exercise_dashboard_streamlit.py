@@ -121,18 +121,6 @@ def main():
     start_week = st.selectbox("Select starting week:", available_weeks_in_month, index=0)
     hide_inactive = st.checkbox("Hide inactive people (no data in latest week)", value=True)
 
-    # Filter group_df for rows from (start_month, start_week) onward
-    def month_week_gte(row):
-        month_idx = month_order.index(row['Month'])
-        start_month_idx = month_order.index(start_month)
-        if month_idx > start_month_idx:
-            return True
-        elif month_idx == start_month_idx:
-            return row['Week'] >= start_week
-        else:
-            return False
-    
-
         # Calculate balances for all weeks
     for group in df['Group'].unique():
         for month in df[df['Group'] == group]['Month'].unique():
@@ -156,7 +144,15 @@ def main():
     if group_number == 1:
         group_df = group_df[~group_df['Month'].isin(['January', 'February', 'March'])]
     group_df['Month'] = pd.Categorical(group_df['Month'], categories=present_months, ordered=True)
-    filtered_group_df = group_df[group_df.apply(month_week_gte, axis=1)]
+    filtered_group_df = group_df[group_df.apply(
+    lambda row: (
+        month_order.index(row['Month']) > month_order.index(start_month)
+        or (
+            month_order.index(row['Month']) == month_order.index(start_month)
+            and row['Week'] >= start_week
+        )
+    ), axis=1)]
+
 
     # Pivot for heatmap
     balance_table = filtered_group_df.pivot_table(
