@@ -145,13 +145,17 @@ def main():
         group_df = group_df[~group_df['Month'].isin(['January', 'February', 'March'])]
     group_df['Month'] = pd.Categorical(group_df['Month'], categories=present_months, ordered=True)
     filtered_group_df = group_df[group_df.apply(
-    lambda row: (
-        month_order.index(row['Month']) > month_order.index(start_month)
-        or (
-            month_order.index(row['Month']) == month_order.index(start_month)
-            and row['Week'] >= start_week
-        )
-    ), axis=1)]
+        lambda row: (
+            row['Month'] in month_order and
+            (
+                month_order.index(row['Month']) > month_order.index(start_month)
+                or (
+                    month_order.index(row['Month']) == month_order.index(start_month)
+                    and row['Week'] >= start_week
+                )
+            )
+        ), axis=1)]
+
 
 
     # Pivot for heatmap
