@@ -216,25 +216,29 @@ def main():
     santorini_cmap = LinearSegmentedColormap.from_list("Santorini", santorini_colors)
 
 
-    fig, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(
-        sorted_balance_table,
-        annot=True,
-        fmt=".1f",
-        cmap=santorini_cmap,
-        linewidths=0.5,
-        linecolor='#d6eaf8',
-        mask=sorted_balance_table.isna(),
-        cbar_kws={'label': 'Balance (€)', 'shrink': 0.8},
-        ax=ax
-    )
-    ax.set_title(f"Weekly Balance Over Time by Person (Group {group_number})", fontsize=18, color="#003F63", pad=20)
-    ax.set_ylabel("Month, Week", fontsize=12)
-    ax.set_xlabel("Person", fontsize=12)
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
-    plt.tight_layout()
-    st.pyplot(fig)
+    if sorted_balance_table.empty or sorted_balance_table.isna().all().all():
+        st.warning("⚠️ No valid balance data available for the selected date range.")
+    else:
+        fig, ax = plt.subplots(figsize=(12, 8))
+        sns.heatmap(
+            sorted_balance_table,
+            annot=True,
+            fmt=".1f",
+            cmap=santorini_cmap,
+            linewidths=0.5,
+            linecolor='#d6eaf8',
+            mask=sorted_balance_table.isna(),
+            cbar_kws={'label': 'Balance (€)', 'shrink': 0.8},
+            ax=ax
+        )
+        ax.set_title(f"Weekly Balance Over Time by Person (Group {group_number})", fontsize=18, color="#003F63", pad=20)
+        ax.set_ylabel("Month, Week", fontsize=12)
+        ax.set_xlabel("Person", fontsize=12)
+        plt.xticks(rotation=45, ha='right')
+        plt.yticks(rotation=0)
+        plt.tight_layout()
+        st.pyplot(fig)
+
 
 
 
