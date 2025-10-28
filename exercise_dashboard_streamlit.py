@@ -171,7 +171,7 @@ def main():
     existing['MonthSort'] = existing['Month'].map(month_sorter)
     existing = existing.sort_values(by=['MonthSort', 'Week']).drop(columns='MonthSort')
     existing_index = pd.MultiIndex.from_frame(existing)
-    balance_table = balance_table.loc[existing_index]
+    balance_table = balance_table.reindex(existing_index)
         # Remove inactive people if checkbox is checked
     if hide_inactive and not balance_table.empty:
         # Find the most recent (Month, Week) in the filtered data
