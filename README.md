@@ -31,7 +31,7 @@ A fully interactive Streamlit dashboard that helps groups stay accountable with 
 - Pandas & NumPy – data manipulation
 - Plotly – interactive charts and tables
 - Matplotlib + Seaborn – custom heatmap visualization
-- Google Sheets – source of truth for exercise + transactions
+- Supabase Postgres (project Side Projects, schema `accountability`): source of truth, written live by the Accountability Bot. Set `database_url` in Streamlit secrets (read-only role).
 
 🏃‍♂️‍➡️ How to Run
 - It's deployed as a webapp, so in order to see if for yourself, all you have to do is click this link:
